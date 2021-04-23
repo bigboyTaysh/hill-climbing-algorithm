@@ -5,8 +5,9 @@ import numpy
 from PyQt5.QtChart import QChart, QLineSeries, QScatterSeries
 from lib.models import Test
 import csv
+import random
 
-Form, Window = uic.loadUiType("geo.ui")
+Form, Window = uic.loadUiType("gui.ui")
 app = QtWidgets.QApplication([])
 window = Window()
 form = Form()
@@ -28,16 +29,63 @@ def run_evolution():
     app.setOverrideCursor(QtCore.Qt.WaitCursor)
 
     #best_binary, best_real, fxs, best_fx = evolution(range_a, range_b, precision, tau, generations_number)
-    evolution(range_a, range_b, precision, generations_number)
+    best_reals, best_binary, best_fxs, local_fxs = evolution(range_a, range_b, precision, generations_number)
     app.restoreOverrideCursor()
-    '''
-    form.best_table.item(1,0).setText(str(best_real[generations_number-1]))
+    
+    form.best_table.item(1,0).setText(str(best_reals[generations_number-1]))
     form.best_table.item(1,1).setText(''.join(map(str, best_binary[generations_number-1])))
-    form.best_table.item(1,2).setText(str(best_fx[generations_number-1]))
+    form.best_table.item(1,2).setText(str(best_fxs[generations_number-1]))
     
     chart = QChart()
+    bests = QLineSeries() 
+
+    pen_best = bests.pen()
+    pen_best.setWidth(1)
+    pen_best.setBrush(QtGui.QColor("red"))
+    bests.setPen(pen_best)
+
+    for i in range(0, generations_number):
+        if len(local_fxs[i]) - 1 == 0:
+            fxs = QScatterSeries()
+            fxs.append(i + 0.5, local_fxs[i][0])
+            pen = fxs.pen()
+            fxs.setMarkerSize(3)
+            pen.setBrush(QtGui.QColor(random.randint(0,255), random.randint(0,255), random.randint(0,255)))
+            fxs.setPen(pen)
+
+        else:
+            fxs = QLineSeries()
+            tick = 1 / (len(local_fxs[i]) - 1)
+            for j in range(len(local_fxs[i])):
+                fxs.append(i + j * tick, local_fxs[i][j])
+            pen = fxs.pen()
+            pen.setWidth(1)
+            pen.setBrush(QtGui.QColor(random.randint(0,255), random.randint(0,255), random.randint(0,255)))
+            fxs.setPen(pen)
+            
+            
+        
+        bests.append(i+1, best_fxs[i])
+        chart.addSeries(fxs)
+
+    chart.addSeries(bests)
+
+    chart.setBackgroundBrush(QtGui.QColor(41, 43, 47))
+    chart.createDefaultAxes()
+    chart.legend().hide()
+    chart.setContentsMargins(-10, -10, -10, -10)
+    chart.layout().setContentsMargins(0, 0, 0, 0)
+    chart.axisY().setRange(-2,2)
+    chart.axisX().setTickCount(11)
+    chart.axisX().setLabelsColor(QtGui.QColor("white"))
+    chart.axisX().setLabelFormat("%i")
+    chart.axisY().setLabelsColor(QtGui.QColor("white"))
+    form.widget.setChart(chart)
+
+    '''
+    
     series = QLineSeries()
-    bests = QLineSeries()
+    
     points = QScatterSeries()
 
     pen = series.pen()
@@ -45,10 +93,7 @@ def run_evolution():
     pen.setBrush(QtGui.QColor(114, 137, 218))
     series.setPen(pen)
 
-    pen_best = bests.pen()
-    pen_best.setWidth(1)
-    pen_best.setBrush(QtGui.QColor("red"))
-    bests.setPen(pen_best)
+    
 
     pen_points = points.pen()
     pen_points.setBrush(QtGui.QColor("white"))
@@ -66,16 +111,7 @@ def run_evolution():
     chart.addSeries(bests)
     chart.addSeries(points)
     
-    chart.setBackgroundBrush(QtGui.QColor(41, 43, 47))
-    chart.createDefaultAxes()
-    chart.legend().hide()
-    chart.setContentsMargins(-10, -10, -10, -10)
-    chart.layout().setContentsMargins(0, 0, 0, 0)
-    chart.axisY().setRange(-2,2)
-    chart.axisX().setLabelsColor(QtGui.QColor("white"))
-    chart.axisX().setLabelFormat("%i")
-    chart.axisY().setLabelsColor(QtGui.QColor("white"))
-    form.widget.setChart(chart)
+    
 
     with open('best_history.csv', 'w', newline='', encoding='utf8') as history_csvfile:
         history_writer = csv.writer(

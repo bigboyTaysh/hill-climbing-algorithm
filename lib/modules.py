@@ -49,6 +49,12 @@ def int_to_bin(integer, power):
 def int_to_real(integer,  range_a,  range_b, precision, power):
     return numpy.round(range_a + ((range_b - range_a) * integer)/(pow(2, power)-1), precision)
 
+@numba.jit(nopython=True, fastmath=True)
+def bin_to_real(binary,  range_a,  range_b, precision, power):
+    out = 0
+    for bit in binary:
+        out = (out << 1) | bit
+    return numpy.round(range_a + ((range_b - range_a) * out)/(pow(2, power)-1), precision)
 
 @numba.jit(nopython=True, fastmath=True)
 def func(real):
@@ -62,42 +68,89 @@ def get_individual(range_a, range_b, precision, power):
      
 
 @numba.jit(nopython=True, fastmath=True)
-def new_individuals(bins, new_bins, new_fxs, range_a, range_b, precision, power, generations_number):
+def new_individuals(bins, new_bins, new_reals, new_fxs, range_a, range_b, precision, power, generations_number):
     for bit in numpy.arange(power):
         new_bins[bit] = bins
         new_bins[bit, bit] = 1 - new_bins[bit, bit]
-        new_fxs[bit] = func(int_to_real(bin_to_int(new_bins[bit]), range_a,  range_b, precision, power))
+        new_reals[bit] = bin_to_real(new_bins[bit], range_a,  range_b, precision, power)
+        new_fxs[bit] = func(new_reals[bit])
 
 
 @numba.jit(nopython=True)
 def evolution(range_a, range_b, precision, generations_number):
-    iteration = 0
     power = power_of_2(range_a, range_b, precision)
     best_binary = numpy.empty((generations_number,power), dtype=numpy.int32)
     best_reals = numpy.empty(generations_number, dtype=numpy.double)
     best_fxs = numpy.empty(generations_number, dtype=numpy.double)
+    local_binary = numpy.empty((generations_number,power), dtype=numpy.int32)
+    local_reals = numpy.empty(generations_number, dtype=numpy.double)
+    #local_fxs = numpy.empty(generations_number, dtype=numpy.double)
+    local_fxs = []
+    local_fxs_list = []
     new_individuals_bins = numpy.empty((power, power), dtype=numpy.int32)
     new_individuals_fxs = numpy.empty(power, dtype=numpy.double)
+    new_individuals_reals = numpy.empty(power, dtype=numpy.double)
 
-    while iteration < generations_number:
-        local = False
-        best_binary[iteration] = get_individual(range_a, range_b, precision, power)
-        best_reals[iteration] = int_to_real(bin_to_int(best_binary[iteration]), range_a, range_b, precision, power)
-        best_fxs[iteration] = func(best_reals[iteration])
 
-        print(best_binary[iteration])
-        print(best_reals[iteration])
-        print(best_fxs[iteration])
+    best_fxs[0] = numpy.finfo(numpy.double).min
+    index = 0
+    local = False
+    local_binary[0] = get_individual(range_a, range_b, precision, power)
+    local_reals[0] = bin_to_real(local_binary[0], range_a, range_b, precision, power)
+    local_fxs.append(func(local_reals[0]))
 
-        while not local:
-            new_individuals(best_binary[iteration], new_individuals_bins, new_individuals_fxs, range_a, range_b, precision, power, generations_number)
-            print(new_individuals_bins)
+    while not local:
+        new_individuals(local_binary[0], new_individuals_bins, new_individuals_reals, new_individuals_fxs, range_a, range_b, precision, power, generations_number)
+        index = numpy.argmax(new_individuals_fxs)
+        
+        if local_fxs[len(local_fxs)-1] < new_individuals_fxs[index]:
+            local_fxs.append(new_individuals_fxs[index])
+            local_reals[0] = new_individuals_reals[index]
+            local_binary[0] = new_individuals_bins[index]
+            
+        else:
             local = True
 
-        print("")
+    
+    local_fxs_list.append(local_fxs[:])
+    best_binary[0] = local_binary[0]
+    best_reals[0] = local_reals[0]
+    best_fxs[0] = local_fxs[len(local_fxs)-1]
+    local_fxs.clear()
+
+    iteration = 1
+    while iteration < generations_number:
+        local = False
+        local_binary[iteration] = get_individual(range_a, range_b, precision, power)
+        local_reals[iteration] = bin_to_real(local_binary[iteration], range_a, range_b, precision, power)
+        local_fxs.append(func(local_reals[iteration]))
+
+        while not local:
+            new_individuals(local_binary[iteration], new_individuals_bins, new_individuals_reals, new_individuals_fxs, range_a, range_b, precision, power, generations_number)
+            index = numpy.argmax(new_individuals_fxs)
+            
+            if local_fxs[len(local_fxs)-1] < new_individuals_fxs[index]:
+                local_fxs.append(new_individuals_fxs[index])
+                local_reals[iteration] = new_individuals_reals[index]
+                local_binary[iteration] = new_individuals_bins[index]
+            else:
+                local = True
+
+        local_fxs_list.append(local_fxs[:])
+
+        if best_fxs[iteration-1] < local_fxs[len(local_fxs)-1]:
+            best_binary[iteration] = local_binary[iteration]
+            best_reals[iteration] = local_reals[iteration]
+            best_fxs[iteration] = local_fxs[len(local_fxs)-1]
+        else:
+            best_binary[iteration] = best_binary[iteration-1]
+            best_reals[iteration] = best_reals[iteration-1]
+            best_fxs[iteration] = best_fxs[iteration-1]
+
+        local_fxs.clear()
         iteration += 1
 
-    return
+    return best_reals, best_binary, best_fxs, local_fxs_list
 
 '''
 @numba.jit(nopython=True, fastmath=True)
