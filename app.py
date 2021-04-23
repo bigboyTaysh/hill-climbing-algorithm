@@ -28,7 +28,7 @@ def run_evolution():
 
     app.setOverrideCursor(QtCore.Qt.WaitCursor)
 
-    best_reals, best_binary, best_fxs, local_fxs, _ = evolution(range_a, range_b, precision, generations_number)
+    best_reals, best_binary, best_fxs, local_fxs, _, _ = evolution(range_a, range_b, precision, generations_number)
 
     form.best_table.item(1,0).setText(str(best_reals[generations_number-1]))
     form.best_table.item(1,1).setText(''.join(map(str, best_binary[generations_number-1])))

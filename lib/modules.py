@@ -92,33 +92,8 @@ def evolution(range_a, range_b, precision, generations_number, checkMax = False)
 
     local = False
     found = False
-
-    '''
-    best_fxs[0] = numpy.finfo(numpy.double).min
-    index = 0
-    local_binary[0] = get_individual(range_a, range_b, precision, power)
-    local_reals[0] = bin_to_real(local_binary[0], range_a, range_b, precision, power)
-    local_fxs.append(func(local_reals[0]))
-
-    while not local:
-        new_individuals(local_binary[0], new_individuals_bins, new_individuals_reals, new_individuals_fxs, range_a, range_b, precision, power, generations_number)
-        index = numpy.argmax(new_individuals_fxs)
-        
-        if local_fxs[len(local_fxs)-1] < new_individuals_fxs[index]:
-            local_fxs.append(new_individuals_fxs[index])
-            local_reals[0] = new_individuals_reals[index]
-            local_binary[0] = new_individuals_bins[index]
-            
-        else:
-            local = True
-
-    local_fxs_list.append(local_fxs[:])
-    best_binary[0] = local_binary[0]
-    best_reals[0] = local_reals[0]
-    best_fxs[0] = local_fxs[len(local_fxs)-1]
-    local_fxs.clear()
-'''
     iteration = 0
+    
     while iteration < generations_number:
         local = False
         local_binary[iteration] = get_individual(range_a, range_b, precision, power)
@@ -129,7 +104,7 @@ def evolution(range_a, range_b, precision, generations_number, checkMax = False)
             new_individuals(local_binary[iteration], new_individuals_bins, new_individuals_reals, new_individuals_fxs, range_a, range_b, precision, power, generations_number)
             index = numpy.argmax(new_individuals_fxs)
             
-            if local_fxs[len(local_fxs)-1] < new_individuals_fxs[index]:
+            if local_fxs[-1] < new_individuals_fxs[index]:
                 local_fxs.append(new_individuals_fxs[index])
                 local_reals[iteration] = new_individuals_reals[index]
                 local_binary[iteration] = new_individuals_bins[index]
@@ -138,15 +113,14 @@ def evolution(range_a, range_b, precision, generations_number, checkMax = False)
 
         local_fxs_list.append(local_fxs[:])
 
-
         if iteration == 0:
             best_binary[iteration] = local_binary[iteration]
             best_reals[iteration] = local_reals[iteration]
-            best_fxs[iteration] = local_fxs[len(local_fxs)-1]
-        if best_fxs[iteration-1] < local_fxs[len(local_fxs)-1]:
+            best_fxs[iteration] = local_fxs[-1]
+        elif best_fxs[iteration-1] < local_fxs[-1]:
             best_binary[iteration] = local_binary[iteration]
             best_reals[iteration] = local_reals[iteration]
-            best_fxs[iteration] = local_fxs[len(local_fxs)-1]
+            best_fxs[iteration] = local_fxs[-1]
         else:
             best_binary[iteration] = best_binary[iteration-1]
             best_reals[iteration] = best_reals[iteration-1]
