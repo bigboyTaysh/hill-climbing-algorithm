@@ -28,9 +28,7 @@ def run_evolution():
 
     app.setOverrideCursor(QtCore.Qt.WaitCursor)
 
-    #best_binary, best_real, fxs, best_fx = evolution(range_a, range_b, precision, tau, generations_number)
     best_reals, best_binary, best_fxs, local_fxs = evolution(range_a, range_b, precision, generations_number)
-    app.restoreOverrideCursor()
     
     form.best_table.item(1,0).setText(str(best_reals[generations_number-1]))
     form.best_table.item(1,1).setText(''.join(map(str, best_binary[generations_number-1])))
@@ -47,11 +45,13 @@ def run_evolution():
     for i in range(0, generations_number):
         if len(local_fxs[i]) - 1 == 0:
             fxs = QScatterSeries()
-            fxs.append(i + 0.5, local_fxs[i][0])
+            fxs.append(i + 0.99, local_fxs[i][0])
             pen = fxs.pen()
-            fxs.setMarkerSize(3)
-            pen.setBrush(QtGui.QColor(random.randint(0,255), random.randint(0,255), random.randint(0,255)))
+            color = QtGui.QColor(random.randint(50,255), random.randint(50,255), random.randint(50,255))
+            fxs.setColor(color)
+            pen.setColor(color)
             fxs.setPen(pen)
+            fxs.setMarkerSize(5)
 
         else:
             fxs = QLineSeries()
@@ -60,11 +60,9 @@ def run_evolution():
                 fxs.append(i + j * tick, local_fxs[i][j])
             pen = fxs.pen()
             pen.setWidth(1)
-            pen.setBrush(QtGui.QColor(random.randint(0,255), random.randint(0,255), random.randint(0,255)))
+            pen.setBrush(QtGui.QColor(random.randint(50,255), random.randint(50,255), random.randint(50,255)))
             fxs.setPen(pen)
             
-            
-        
         bests.append(i+1, best_fxs[i])
         chart.addSeries(fxs)
 
@@ -75,44 +73,19 @@ def run_evolution():
     chart.legend().hide()
     chart.setContentsMargins(-10, -10, -10, -10)
     chart.layout().setContentsMargins(0, 0, 0, 0)
-    chart.axisY().setRange(-2,2)
     chart.axisX().setTickCount(11)
     chart.axisX().setLabelsColor(QtGui.QColor("white"))
+    chart.axisX().setGridLineColor(QtGui.QColor("grey"))
     chart.axisX().setLabelFormat("%i")
+    chart.axisY().setRange(-2,2)
     chart.axisY().setLabelsColor(QtGui.QColor("white"))
+    chart.axisY().setGridLineColor(QtGui.QColor("grey"))
     form.widget.setChart(chart)
+
+    app.restoreOverrideCursor()
 
     '''
     
-    series = QLineSeries()
-    
-    points = QScatterSeries()
-
-    pen = series.pen()
-    pen.setWidth(1)
-    pen.setBrush(QtGui.QColor(114, 137, 218))
-    series.setPen(pen)
-
-    
-
-    pen_points = points.pen()
-    pen_points.setBrush(QtGui.QColor("white"))
-    points.setMarkerSize(8)
-    points.setColor(QtGui.QColor("red"))
-    points.setPen(pen_points)
-
-    for i in range(1, generations_number+1):
-        if fxs[i-1] == best_fx[generations_number-1]:
-            points.append(i, fxs[i-1])
-        series.append(i, fxs[i-1])
-        bests.append(i, best_fx[i-1])
-    
-    chart.addSeries(series)
-    chart.addSeries(bests)
-    chart.addSeries(points)
-    
-    
-
     with open('best_history.csv', 'w', newline='', encoding='utf8') as history_csvfile:
         history_writer = csv.writer(
             history_csvfile, delimiter=';', dialect=csv.excel)
