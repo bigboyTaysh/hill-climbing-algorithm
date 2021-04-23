@@ -132,7 +132,7 @@ def test_generations():
     form.test_table.setItem(0, 2, item)
 
     for i in range(0, generations):
-        percent = sum(result[:i+1])/10*100
+        percent = sum(result[:i+1])/100000*100
         series.append(i+1, percent)
 
         form.test_table.insertRow(i+1)

@@ -167,7 +167,7 @@ def evolution(range_a, range_b, precision, generations_number, checkMax = False)
 def test_generation(range_a, range_b, precision, generations):
     result = numpy.zeros(generations, dtype=numpy.int32)
 
-    for i in numpy.arange(10000):
+    for i in numpy.arange(100000):
         _, _, _, _, iteration, found = evolution(range_a, range_b, precision, generations, True)
         result[iteration] += 1 if found else 0
 
