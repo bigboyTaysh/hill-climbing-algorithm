@@ -460,29 +460,10 @@ color: rgb(255, 255, 255);</string>
      <attribute name="title">
       <string>Tab 2</string>
      </attribute>
-     <widget class="QLabel" name="label_11">
-      <property name="geometry">
-       <rect>
-        <x>380</x>
-        <y>40</y>
-        <width>21</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="text">
-       <string>τ</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
      <widget class="QLabel" name="label_12">
       <property name="geometry">
        <rect>
-        <x>560</x>
+        <x>480</x>
         <y>40</y>
         <width>21</width>
         <height>20</height>
@@ -498,29 +479,10 @@ color: rgb(255, 255, 255);</string>
        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
      </widget>
-     <widget class="QLineEdit" name="input_tau_test">
-      <property name="geometry">
-       <rect>
-        <x>410</x>
-        <y>40</y>
-        <width>41</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);</string>
-      </property>
-      <property name="inputMask">
-       <string>9.9</string>
-      </property>
-      <property name="text">
-       <string>1.5</string>
-      </property>
-     </widget>
      <widget class="QLineEdit" name="input_t_test">
       <property name="geometry">
        <rect>
-        <x>590</x>
+        <x>510</x>
         <y>40</y>
         <width>41</width>
         <height>21</height>
@@ -540,7 +502,7 @@ color: rgb(255, 255, 255);</string>
      <widget class="QPushButton" name="button_test_generations">
       <property name="geometry">
        <rect>
-        <x>350</x>
+        <x>450</x>
         <y>70</y>
         <width>141</width>
         <height>31</height>
@@ -576,47 +538,6 @@ color: white;</string>
       </property>
       <property name="text">
        <string>Testuj pokolenia</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="button_test_tau">
-      <property name="geometry">
-       <rect>
-        <x>530</x>
-        <y>70</y>
-        <width>141</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>30</height>
-       </size>
-      </property>
-      <property name="baseSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="cursor">
-       <cursorShape>PointingHandCursor</cursorShape>
-      </property>
-      <property name="layoutDirection">
-       <enum>Qt::RightToLeft</enum>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(91, 97, 106);
-color: white;</string>
-      </property>
-      <property name="text">
-       <string>Testuj tau</string>
       </property>
      </widget>
      <widget class="QTableWidget" name="test_table">
@@ -689,10 +610,10 @@ Header {Background-color: rgb(190,1,1);}</string>
        <bool>false</bool>
       </property>
       <property name="rowCount">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="columnCount">
-       <number>6</number>
+       <number>3</number>
       </property>
       <attribute name="horizontalHeaderVisible">
        <bool>false</bool>
@@ -718,9 +639,14 @@ Header {Background-color: rgb(190,1,1);}</string>
       <attribute name="verticalHeaderVisible">
        <bool>false</bool>
       </attribute>
+      <row>
+       <property name="text">
+        <string>New Row</string>
+       </property>
+      </row>
       <column>
        <property name="text">
-        <string>tau</string>
+        <string notr="true">tau</string>
        </property>
        <property name="textAlignment">
         <set>AlignCenter</set>
@@ -790,9 +716,30 @@ Header {Background-color: rgb(190,1,1);}</string>
         </brush>
        </property>
       </column>
-      <column/>
-      <column/>
-      <column/>
+      <item row="0" column="0">
+       <property name="text">
+        <string>iteracje</string>
+       </property>
+       <property name="textAlignment">
+        <set>AlignCenter</set>
+       </property>
+      </item>
+      <item row="0" column="1">
+       <property name="text">
+        <string>wystąpienia</string>
+       </property>
+       <property name="textAlignment">
+        <set>AlignCenter</set>
+       </property>
+      </item>
+      <item row="0" column="2">
+       <property name="text">
+        <string>%</string>
+       </property>
+       <property name="textAlignment">
+        <set>AlignCenter</set>
+       </property>
+      </item>
      </widget>
      <widget class="QChartView" name="widget_test" native="true">
       <property name="geometry">
