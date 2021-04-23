@@ -1,5 +1,5 @@
 from PyQt5 import uic, QtWidgets, QtCore, QtGui
-from lib.modules import evolution
+from lib.modules import evolution, test_generation
 from time import time
 import numpy
 from PyQt5.QtChart import QChart, QLineSeries, QScatterSeries
@@ -28,8 +28,8 @@ def run_evolution():
 
     app.setOverrideCursor(QtCore.Qt.WaitCursor)
 
-    best_reals, best_binary, best_fxs, local_fxs = evolution(range_a, range_b, precision, generations_number)
-    
+    best_reals, best_binary, best_fxs, local_fxs, _ = evolution(range_a, range_b, precision, generations_number)
+
     form.best_table.item(1,0).setText(str(best_reals[generations_number-1]))
     form.best_table.item(1,1).setText(''.join(map(str, best_binary[generations_number-1])))
     form.best_table.item(1,2).setText(str(best_fxs[generations_number-1]))
@@ -100,89 +100,61 @@ def run_evolution():
             index += 1
 
     app.restoreOverrideCursor()
+    '''
 
 def test_generations():
     range_a = float(str(form.input_a_test.text()))
     range_b = float(str(form.input_b_test.text()))
     precision = int(str(form.input_d_test.text()))
-    tau = float(str(form.input_tau_test.text()))
+    generations = int(str(form.input_generations_test.text()))
 
     app.setOverrideCursor(QtCore.Qt.WaitCursor)
     start = time()
-    result  = test_generation(range_a, range_b, precision, tau)
+    result  = test_generation(range_a, range_b, precision, generations)
+    app.restoreOverrideCursor()
 
     chart = QChart()
-    series_bests = QLineSeries()
+    series = QLineSeries()
 
     form.test_table.setRowCount(0)
 
-    for i in range(0, 40):
-        series_bests.append(result[i,0], result[i,1])
+    form.test_table.insertRow(0)
+    item = QtWidgets.QTableWidgetItem("iteracje")
+    item.setTextAlignment(QtCore.Qt.AlignCenter)
+    form.test_table.setItem(0, 0, item)
 
-    chart.addSeries(series_bests)
+    item = QtWidgets.QTableWidgetItem("wystąpienia")
+    item.setTextAlignment(QtCore.Qt.AlignCenter)
+    form.test_table.setItem(0, 1, item)
+
+    item = QtWidgets.QTableWidgetItem("%")
+    item.setTextAlignment(QtCore.Qt.AlignCenter)
+    form.test_table.setItem(0, 2, item)
+
+    for i in range(0, generations):
+        percent = sum(result[:i+1])/10*100
+        series.append(i+1, percent)
+
+        form.test_table.insertRow(i+1)
+        form.test_table.setItem(i+1, 0, QtWidgets.QTableWidgetItem(str(i+1)))
+        form.test_table.setItem(i+1, 1, QtWidgets.QTableWidgetItem(str(result[i])))
+        form.test_table.setItem(i+1, 2, QtWidgets.QTableWidgetItem(str(round(percent, 2))))
+ 
+    chart.addSeries(series)
+
     chart.setBackgroundBrush(QtGui.QColor(41, 43, 47))
     chart.createDefaultAxes()
     chart.legend().hide()
     chart.setContentsMargins(-10, -10, -10, -10)
     chart.layout().setContentsMargins(0, 0, 0, 0)
-    chart.axisX().setTickCount(9)
-    chart.axisY().setRange(-2, 2)
+    chart.axisX().setTickCount(10)
+    chart.axisY().setRange(0, 100)
+    chart.axisY().setTickCount(11)
     chart.axisX().setLabelsColor(QtGui.QColor("white"))
     chart.axisY().setLabelsColor(QtGui.QColor("white"))
     form.widget_test.setChart(chart)
 
-    result_sort = result[numpy.argsort(-result[:, 1])] 
 
-    for i in range(0, 40):
-        form.test_table.insertRow(i)
-        form.test_table.setItem(i, 0, QtWidgets.QTableWidgetItem(str(round(result_sort[i,0],2))))
-        form.test_table.setItem(i, 1, QtWidgets.QTableWidgetItem(str(tau)))
-        form.test_table.setItem(i, 2, QtWidgets.QTableWidgetItem(str(result_sort[i,1])))
-
-    app.restoreOverrideCursor()
-
-def test_taus():
-    range_a = float(str(form.input_a_test.text()))
-    range_b = float(str(form.input_b_test.text()))
-    precision = int(str(form.input_d_test.text()))
-    generations_number = int(str(form.input_t_test.text()))
-
-    app.setOverrideCursor(QtCore.Qt.WaitCursor)
-    start = time()
-    result  = test_tau(range_a, range_b, precision, generations_number)
-    
-    chart = QChart()
-    series_bests = QLineSeries()
-
-    form.test_table.setRowCount(0)
-
-    for i in range(0, 50):
-        series_bests.append(result[i,0], result[i,1])
-
-    chart.addSeries(series_bests)
-    chart.setBackgroundBrush(QtGui.QColor(41, 43, 47))
-    chart.createDefaultAxes()
-    chart.legend().hide()
-    chart.setContentsMargins(-10, -10, -10, -10)
-    chart.layout().setContentsMargins(0, 0, 0, 0)
-    chart.axisX().setTickCount(8)
-    chart.axisY().setRange(-2, 2)
-    chart.axisX().setLabelsColor(QtGui.QColor("white"))
-    chart.axisY().setLabelsColor(QtGui.QColor("white"))
-    form.widget_test.setChart(chart)
-
-    result_sort = result[numpy.argsort(-result[:, 1])] 
-
-    for i in range(0, 50):
-        form.test_table.insertRow(i)
-        form.test_table.setItem(i, 0, QtWidgets.QTableWidgetItem(str(round(result_sort[i,0],2))))
-        form.test_table.setItem(i, 1, QtWidgets.QTableWidgetItem(str(generations_number)))
-        form.test_table.setItem(i, 2, QtWidgets.QTableWidgetItem(str(result_sort[i,1])))
-    
-    app.restoreOverrideCursor()
-
-'''
 form.button_start.clicked.connect(run_evolution)
-#form.button_test_generations.clicked.connect(test_generations)
-#form.button_test_tau.clicked.connect(test_taus)
+form.button_test_generations.clicked.connect(test_generations)
 app.exec()

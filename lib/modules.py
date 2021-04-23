@@ -77,24 +77,25 @@ def new_individuals(bins, new_bins, new_reals, new_fxs, range_a, range_b, precis
 
 
 @numba.jit(nopython=True)
-def evolution(range_a, range_b, precision, generations_number):
+def evolution(range_a, range_b, precision, generations_number, checkMax = False):
     power = power_of_2(range_a, range_b, precision)
     best_binary = numpy.empty((generations_number,power), dtype=numpy.int32)
     best_reals = numpy.empty(generations_number, dtype=numpy.double)
     best_fxs = numpy.empty(generations_number, dtype=numpy.double)
     local_binary = numpy.empty((generations_number,power), dtype=numpy.int32)
     local_reals = numpy.empty(generations_number, dtype=numpy.double)
-    #local_fxs = numpy.empty(generations_number, dtype=numpy.double)
     local_fxs = []
     local_fxs_list = []
     new_individuals_bins = numpy.empty((power, power), dtype=numpy.int32)
     new_individuals_fxs = numpy.empty(power, dtype=numpy.double)
     new_individuals_reals = numpy.empty(power, dtype=numpy.double)
 
+    local = False
+    found = False
 
+    '''
     best_fxs[0] = numpy.finfo(numpy.double).min
     index = 0
-    local = False
     local_binary[0] = get_individual(range_a, range_b, precision, power)
     local_reals[0] = bin_to_real(local_binary[0], range_a, range_b, precision, power)
     local_fxs.append(func(local_reals[0]))
@@ -111,14 +112,13 @@ def evolution(range_a, range_b, precision, generations_number):
         else:
             local = True
 
-    
     local_fxs_list.append(local_fxs[:])
     best_binary[0] = local_binary[0]
     best_reals[0] = local_reals[0]
     best_fxs[0] = local_fxs[len(local_fxs)-1]
     local_fxs.clear()
-
-    iteration = 1
+'''
+    iteration = 0
     while iteration < generations_number:
         local = False
         local_binary[iteration] = get_individual(range_a, range_b, precision, power)
@@ -138,6 +138,11 @@ def evolution(range_a, range_b, precision, generations_number):
 
         local_fxs_list.append(local_fxs[:])
 
+
+        if iteration == 0:
+            best_binary[iteration] = local_binary[iteration]
+            best_reals[iteration] = local_reals[iteration]
+            best_fxs[iteration] = local_fxs[len(local_fxs)-1]
         if best_fxs[iteration-1] < local_fxs[len(local_fxs)-1]:
             best_binary[iteration] = local_binary[iteration]
             best_reals[iteration] = local_reals[iteration]
@@ -147,125 +152,23 @@ def evolution(range_a, range_b, precision, generations_number):
             best_reals[iteration] = best_reals[iteration-1]
             best_fxs[iteration] = best_fxs[iteration-1]
 
+        if checkMax:
+            if(best_reals[iteration] == 10.999):
+                found = True
+                break
+
         local_fxs.clear()
         iteration += 1
 
-    return best_reals, best_binary, best_fxs, local_fxs_list
-
-'''
-@numba.jit(nopython=True, fastmath=True)
-def mutation(bins, individuals, power, tau):
-    for bit in numpy.arange(1, power + 1):
-        r = random.random()
-        t = 1/pow(bit, tau)
-        if r <= t:
-            bins[individuals[bit-1]] = 1 - bins[individuals[bit-1]]
-
-
-@numba.jit(nopython=True)
-def get_evolution(individuals, bins, reals, fxs, best_fxs, new_bins, new_fxs, best_binary, best_real, range_a, range_b, precision, power, tau, generations_number):
-    for i in numpy.arange(1, generations_number):
-        bins[i] = bins[i-1]
-        new_individuals(bins[i], new_bins, new_fxs, range_a, range_b, precision, power, generations_number)
-        for bit in numpy.arange(power):
-            individuals[bit,0] = bit+1
-            individuals[bit,1] = new_fxs[bit]
-
-        individuals_bins = numpy.argsort(-individuals[:, 1]).T 
-        mutation(bins[i], individuals_bins, power, tau)
-
-        reals[i] = int_to_real(bin_to_int(bins[i]), range_a, range_b, precision, power)
-        fxs[i] = func(reals[i])
-
-        if fxs[i] > best_fxs[i-1]:
-            best_binary[i] = bins[i]
-            best_real[i] = reals[i]
-            best_fxs[i] = fxs[i]
-        else:
-            best_fxs[i] = best_fxs[i-1]
-            best_binary[i] = best_binary[i-1]
-            best_real[i] = best_real[i-1]
-
-        new_bins = numpy.empty((power, power), dtype=numpy.int32)
-        new_fxs = numpy.empty(power, dtype=numpy.double)
-        individuals = numpy.empty((power,2), dtype=numpy.double)
-
-@numba.jit(nopython=True)
-def evolution(range_a, range_b, precision, tau, generations_number):
-    power = power_of_2(range_a, range_b, precision)
-    reals = numpy.empty(generations_number, dtype=numpy.double)
-    bins = numpy.empty((generations_number, power), dtype=numpy.int32)
-    fxs = numpy.empty(generations_number, dtype=numpy.double)
-    best_fxs = numpy.empty(generations_number, dtype=numpy.double)
-    best_binary = numpy.empty((generations_number,power), dtype=numpy.int32)
-    best_real = numpy.empty(generations_number, dtype=numpy.double)
-    new_bins = numpy.empty((power, power), dtype=numpy.int32)
-    new_fxs = numpy.empty(power, dtype=numpy.double)
-    individuals = numpy.empty((power,2), dtype=numpy.double)
-    bins[0] = get_individual(range_a, range_b, precision, power)
-    
-    new_individuals(bins[0], new_bins, new_fxs, range_a, range_b, precision, power, generations_number)
-
-    for bit in numpy.arange(power):
-        individuals[bit,0] = bit+1
-        individuals[bit,1] = new_fxs[bit]
-
-    individuals_bins = numpy.argsort(-individuals[:, 1]).T 
-    mutation(bins[0], individuals_bins, power, tau)
-    reals[0] = int_to_real(bin_to_int(bins[0]), range_a, range_b, precision, power)
-    fxs[0] = func(reals[0])
-    
-    best_binary[0] = bins[0]
-    best_real[0] = reals[0]
-    best_fxs[0] = fxs[0]
-
-    get_evolution(individuals, bins, reals, fxs, best_fxs, new_bins, new_fxs, best_binary, best_real, range_a, range_b, precision, power, tau, generations_number)
-
-    return best_binary, best_real, fxs, best_fxs
-
-
+    return best_reals, best_binary, best_fxs, local_fxs_list, iteration, found
 
 
 @numba.jit(nopython=True, fastmath=True)
-def numba_avg(array):
-    arr_len = len(array)
-    summary = 0
-    for i in numpy.arange(arr_len):
-        summary += array[i]
-    return summary / arr_len
+def test_generation(range_a, range_b, precision, generations):
+    result = numpy.zeros(generations, dtype=numpy.int32)
 
-
-@numba.jit(nopython=True, fastmath=True)
-def test_tau(range_a, range_b, precision, generations_number):
-    best_fxs = numpy.empty(100, dtype=numpy.double)
-    result = numpy.empty((50,2), dtype=numpy.double)
-
-    index = 0
-    for tau_number in numpy.arange(0.1, 5.1, 0.1):
-        for i in numpy.arange(100):
-            _ , _, _, fx = evolution(range_a, range_b, precision, tau_number, generations_number)
-            best_fxs[i] = fx[generations_number-1]
-
-        result[index,0] = numpy.round(tau_number, 1)
-        result[index,1] = numba_avg(best_fxs)
-        index += 1
+    for i in numpy.arange(10000):
+        _, _, _, _, iteration, found = evolution(range_a, range_b, precision, generations, True)
+        result[iteration] += 1 if found else 0
 
     return result
-
-@numba.jit(nopython=True, fastmath=True)
-def test_generation(range_a, range_b, precision, tau):
-    best_fxs = numpy.empty(100, dtype=numpy.double)
-    result = numpy.empty((40,2), dtype=numpy.double)
-
-    index = 0
-    for generations_number in numpy.arange(1000, 5001, 100):
-        for i in numpy.arange(100):
-            _ , _, _, fx = evolution(range_a, range_b, precision, tau, generations_number)
-            best_fxs[i] = fx[generations_number-1]
-
-        result[index,0] = generations_number
-        result[index,1] = numba_avg(best_fxs)
-        index += 1
-
-    return result
-'''
