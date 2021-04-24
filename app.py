@@ -31,11 +31,11 @@ def run_evolution():
 
     app.setOverrideCursor(QtCore.Qt.WaitCursor)
 
-    best_reals, best_binary, best_fxs, local_fxs, _, _ = evolution(range_a, range_b, precision, generations_number)
+    best_reals, best_binary, best_fxs, local_fxs, _, _ = evolution(range_a, range_b, precision, generations_number, form.checkBox.isChecked())
 
-    form.best_table.item(1,0).setText(str(best_reals[generations_number-1]))
-    form.best_table.item(1,1).setText(''.join(map(str, best_binary[generations_number-1])))
-    form.best_table.item(1,2).setText(str(best_fxs[generations_number-1]))
+    form.best_table.item(1,0).setText(str(best_reals[len(local_fxs)-1]))
+    form.best_table.item(1,1).setText(''.join(map(str, best_binary[len(local_fxs)-1])))
+    form.best_table.item(1,2).setText(str(best_fxs[len(local_fxs)-1]))
     
     chart = QChart()
     bests = QLineSeries() 
@@ -45,7 +45,7 @@ def run_evolution():
     pen_best.setBrush(QtGui.QColor("red"))
     bests.setPen(pen_best)
 
-    for i in range(0, generations_number):
+    for i in range(0, len(local_fxs)):
         if len(local_fxs[i]) - 1 == 0:
             fxs = QScatterSeries()
             fxs.append(i + 0.99, local_fxs[i][0])
