@@ -82,25 +82,19 @@ def run_evolution():
     chart.axisY().setGridLineColor(QtGui.QColor("grey"))
     form.widget.setChart(chart)
 
-    app.restoreOverrideCursor()
-
-    '''
-    
     with open('best_history.csv', 'w', newline='', encoding='utf8') as history_csvfile:
         history_writer = csv.writer(
             history_csvfile, delimiter=';', dialect=csv.excel)
         history_writer.writerow(['Parametry'])
         history_writer.writerow(['Precyzja: 10^-%d' % precision])
-        history_writer.writerow(['Tau: %d' % tau])
-        history_writer.writerow(['Pokolenia: %d' % generations_number])
-        history_writer.writerow(['', 'vbest', 'vbin', 'f(vbest)'])
-        index = 1
-        for generation in numpy.arange(generations_number):
-            history_writer.writerow([index,  best_real[generation], best_binary[generation], best_fx[generation]])
-            index += 1
+        history_writer.writerow(['Iteracje: %d' % generations_number])
+        history_writer.writerow(['', 'real', 'bin', 'f(real)'])
+
+        for index, generation in enumerate(range(generations_number)):
+            history_writer.writerow([index,  best_reals[generation], best_binary[generation], best_fxs[generation]])
 
     app.restoreOverrideCursor()
-    '''
+
 
 def test_generations():
     range_a = float(str(form.input_a_test.text()))
