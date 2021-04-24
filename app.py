@@ -1,3 +1,4 @@
+from os import path
 from PyQt5 import uic, QtWidgets, QtCore, QtGui
 from lib.modules import evolution, test_generation
 from time import time
@@ -7,7 +8,9 @@ from lib.models import Test
 import csv
 import random
 
-Form, Window = uic.loadUiType("gui.ui")
+path_to_gui = path.abspath(path.join(path.dirname(__file__), 'gui.ui'))
+
+Form, Window = uic.loadUiType(path_to_gui)
 app = QtWidgets.QApplication([])
 window = Window()
 form = Form()
